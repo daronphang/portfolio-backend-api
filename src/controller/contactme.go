@@ -13,8 +13,8 @@ import (
 )
 
 type Contacts struct {
-	UID              	sql.NullString `json:"uid"`
-	USERNAME            sql.NullString `json:"username"`
+	UUID              	sql.NullString `json:"uuid"`
+	CONTACT_NAME        sql.NullString `json:"contact_name"`
 	EMAIL 				sql.NullString `json:"email"`
 	COMPANY 			sql.NullString `json:"company"`
 	MESSAGE 			sql.NullString `json:"message"`
@@ -22,26 +22,26 @@ type Contacts struct {
 }
 
 type ContactPayload struct {
-	USERNAME	string	`json:"username" binding:"required,max=250"`
-	EMAIL		string	`json:"email" binding:"required,max=250"`
-	COMPANY		string	`json:"company" binding:"max=250"`
-	MESSAGE		string	`json:"message" binding:"max=250"`
+	CONTACT_NAME	string	`json:"contact_name" binding:"required,max=255"`
+	EMAIL			string	`json:"email" binding:"required,max=255"`
+	COMPANY			string	`json:"company" binding:"max=255"`
+	MESSAGE			string	`json:"message" binding:"max=255"`
 }
 
 var sqlReadStr = `
 	SELECT
 	*
 	FROM
-	contact_me
+	contacts
 	%s
 	ORDER BY
 	created_datetime DESC
 `
 
 var sqlCreateStr = `
-	INSERT INTO contact_me (
-		uid,
-		username,
+	INSERT INTO contacts (
+		uuid,
+		contact_name,
 		email,
 		company,
 		message
@@ -53,9 +53,9 @@ var sqlCreateStr = `
 
 var sqlUpdateStr = `
 	UPDATE 
-	contact_me
+	contacts
 	SET message = '%s'
-	WHERE username = '%s'
+	WHERE contact_name = '%s'
 `
 
 func ReadContacts(c *gin.Context) {
@@ -88,8 +88,8 @@ func ReadContacts(c *gin.Context) {
 	for rows.Next() {
 		var row Contacts
 		err = rows.Scan(
-			&row.UID,
-			&row.USERNAME,
+			&row.UUID,
+			&row.CONTACT_NAME,
 			&row.EMAIL,
 			&row.COMPANY,
 			&row.MESSAGE,
@@ -137,7 +137,7 @@ func CreateContact(c *gin.Context) {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(uuid.New(), payload.USERNAME, payload.EMAIL, payload.COMPANY, payload.MESSAGE)
+	_, err = stmt.Exec(uuid.New(), payload.CONTACT_NAME, payload.EMAIL, payload.COMPANY, payload.MESSAGE)
 	if err != nil {
 		err := e.NewError(e.ErrFailedSQLExec, err.Error(), c.HandlerName())
 		c.Error(err).SetMeta(err.Meta())
@@ -156,7 +156,7 @@ func CreateContact(c *gin.Context) {
 		"Portfolio Contact", 
 		fmt.Sprintf(
 			"Name: %s\nEmail: %s\nCompany: %s\nMessage: %s",
-			payload.USERNAME,
+			payload.CONTACT_NAME,
 			payload.EMAIL,
 			payload.COMPANY,
 			payload.MESSAGE,
