@@ -24,6 +24,7 @@ type EnvConf struct {
 	MYSQLPASSWORD 			string `yaml:"MYSQLPASSWORD"`
 	MYSQLSERVER   			string `yaml:"MYSQLSERVER"`
 	MYSQLPORT     			int    `yaml:"MYSQLPORT"`
+	MYSQLPROTOCOL			string `yaml:"MYSQLPROTOCOL"`
 }
 
 var AppCfg = &EnvConf{}

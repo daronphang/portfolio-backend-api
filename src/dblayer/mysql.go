@@ -2,6 +2,7 @@ package dblayer
 
 import (
 	"database/sql"
+	"fmt"
 	"portfolio_golang/src/config"
 	"portfolio_golang/src/zaplog"
 	"time"
@@ -14,12 +15,18 @@ var MYSQLDB = &DBLayer{}
 func InitMYSQL(appCfg *config.EnvConf) (*DBLayer, error) {
 	// DSN 
 	// [username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
+	// user:password@tcp([de:ad:be:ef::ca:fe]:80)/dbname?timeout=90s&collation=utf8mb4_unicode_ci
+
+	// for local sockets: Addr = /var/run/mysqld/mysqld.sock, Net = unix
+	// ipv6 must be enclosed with []
+
 	cfg := &mysql.Config{
 		User: appCfg.MYSQLUSERNAME,
 		Passwd: appCfg.MYSQLPASSWORD,
-		Net: "unix",
-		Addr: "/var/run/mysqld/mysqld.sock",
+		Net: appCfg.MYSQLPROTOCOL,
+		Addr: fmt.Sprintf("%s:%d", appCfg.MYSQLSERVER, appCfg.MYSQLPORT), 
 		DBName: "portfolio",
+		AllowNativePasswords: true,
 	}
 
 	db, err := sql.Open("mysql", cfg.FormatDSN())
