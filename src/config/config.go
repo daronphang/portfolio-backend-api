@@ -22,8 +22,7 @@ type EnvConf struct {
 	MSSQLPORT     			int    `yaml:"MSSQLPORT"`
 	MYSQLUSERNAME 			string `yaml:"MYSQLUSERNAME"`
 	MYSQLPASSWORD 			string `yaml:"MYSQLPASSWORD"`
-	MYSQLSERVER   			string `yaml:"MYSQLSERVER"`
-	MYSQLPORT     			int    `yaml:"MYSQLPORT"`
+	MYSQLADDRESS   			string `yaml:"MYSQLADDRESS"`
 	MYSQLPROTOCOL			string `yaml:"MYSQLPROTOCOL"`
 }
 

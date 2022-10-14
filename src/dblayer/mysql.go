@@ -2,7 +2,6 @@ package dblayer
 
 import (
 	"database/sql"
-	"fmt"
 	"portfolio_golang/src/config"
 	"portfolio_golang/src/zaplog"
 	"time"
@@ -24,7 +23,7 @@ func InitMYSQL(appCfg *config.EnvConf) (*DBLayer, error) {
 		User: appCfg.MYSQLUSERNAME,
 		Passwd: appCfg.MYSQLPASSWORD,
 		Net: appCfg.MYSQLPROTOCOL,
-		Addr: fmt.Sprintf("%s:%d", appCfg.MYSQLSERVER, appCfg.MYSQLPORT), 
+		Addr: appCfg.MYSQLADDRESS, 
 		DBName: "portfolio",
 		AllowNativePasswords: true,
 	}
