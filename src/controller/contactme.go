@@ -16,7 +16,7 @@ type Contacts struct {
 	UUID              	sql.NullString `json:"uuid"`
 	CONTACT_NAME        sql.NullString `json:"contact_name"`
 	EMAIL 				sql.NullString `json:"email"`
-	COMPANY 			sql.NullString `json:"company"`
+	SUBJECT 			sql.NullString `json:"subject"`
 	MESSAGE 			sql.NullString `json:"message"`
 	CREATED_DATETIME 	sql.NullString `json:"created_datetime"`
 }
@@ -24,13 +24,17 @@ type Contacts struct {
 type ContactPayload struct {
 	CONTACT_NAME	string	`json:"contact_name" binding:"required,max=255"`
 	EMAIL			string	`json:"email" binding:"required,max=255"`
-	COMPANY			string	`json:"company" binding:"max=255"`
+	SUBJECT			string	`json:"subject" binding:"max=255"`
 	MESSAGE			string	`json:"message" binding:"max=255"`
 }
 
 var sqlReadStr = `
 	SELECT
-	*
+	contact_name,
+	email,
+	subject,
+	message,
+	created_datetime
 	FROM
 	contacts
 	%s
@@ -43,7 +47,7 @@ var sqlCreateStr = `
 		uuid,
 		contact_name,
 		email,
-		company,
+		subject,
 		message
 	)
 	VALUES (
@@ -74,6 +78,7 @@ func ReadContacts(c *gin.Context) {
 	}
 
 	rows, err := db.Query(fmt.Sprintf(sqlReadStr, email))
+
 	if err != nil {
 		err := e.NewError(e.ErrFailedSQLQuery, err.Error(), c.HandlerName())
 		c.Error(err).SetMeta(err.Meta())
@@ -88,10 +93,9 @@ func ReadContacts(c *gin.Context) {
 	for rows.Next() {
 		var row Contacts
 		err = rows.Scan(
-			&row.UUID,
 			&row.CONTACT_NAME,
 			&row.EMAIL,
-			&row.COMPANY,
+			&row.SUBJECT,
 			&row.MESSAGE,
 			&row.CREATED_DATETIME,
 		)
@@ -137,7 +141,7 @@ func CreateContact(c *gin.Context) {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(uuid.New(), payload.CONTACT_NAME, payload.EMAIL, payload.COMPANY, payload.MESSAGE)
+	_, err = stmt.Exec(uuid.New(), payload.CONTACT_NAME, payload.EMAIL, payload.SUBJECT, payload.MESSAGE)
 	if err != nil {
 		err := e.NewError(e.ErrFailedSQLExec, err.Error(), c.HandlerName())
 		c.Error(err).SetMeta(err.Meta())
@@ -153,12 +157,11 @@ func CreateContact(c *gin.Context) {
 	go SendGmail(
 		"daronphang@gmail.com",
 		"daronphang@gmail.com",
-		"Portfolio Contact", 
+		fmt.Sprintf("Portfolio Contact: %s", payload.SUBJECT),
 		fmt.Sprintf(
-			"Name: %s\nEmail: %s\nCompany: %s\nMessage: %s",
+			"Name: %s\nEmail: %s\nMessage: %s",
 			payload.CONTACT_NAME,
 			payload.EMAIL,
-			payload.COMPANY,
 			payload.MESSAGE,
 		),
 	)
